@@ -1,0 +1,22 @@
+#!/bin/bash
+# Variables injected by Terraform templatefile
+DB_USER=${db_user}
+DB_PASS=${db_password}
+DB_NAME=${db_name}
+URL=${db_host}
+
+apt-get update
+apt-get install -y apache2 php php-mysql mysql-client
+cd /opt
+mkdir crud
+cd /opt/crud
+wget https://d6opu47qoi4ee.cloudfront.net/labs/option3/index.php
+sed -i "s/DB_USER/$DB_USER/g" index.php
+sed -i "s/DB_PASS/$DB_PASS/g" index.php
+sed -i "s/DB_NAME/$DB_NAME/g" index.php
+sed -i "s/DBServer/$URL/g" index.php
+cp index.php /var/www/html
+wget https://d6opu47qoi4ee.cloudfront.net/employees.sql
+mysql -h $URL -u $DB_USER -p$DB_PASS $DB_NAME < employees.sql
+sed -i 's/DirectoryIndex index.html/DirectoryIndex index.php index.html/' /etc/apache2/mods-enabled/dir.conf
+systemctl restart apache2
